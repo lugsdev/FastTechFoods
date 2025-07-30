@@ -1,0 +1,185 @@
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      SA_PASSWORD: "SenhaFortefiap!"
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+    networks:
+      - fasttechfoods-network
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - fasttechfoods-network
+  
+  auth-service:
+    build:
+      context: .
+      dockerfile: src/AuthService/Dockerfile
+    ports:
+      - "5001:5001"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:5001
+      - Jwt__Key=minha-chave-secreta-super-segura-para-jwt-tokens-123456789
+      - ConnectionStrings__MinhaConexao=Server=sqlserver,1433;Database=AuthDb;User Id=sa;Password=SenhaFortefiap!;TrustServerCertificate=true;
+    networks:
+      - fasttechfoods-network
+    depends_on:
+      sqlserver:
+        condition: service_started
+    restart: unless-stopped
+
+  menu-service:
+    build:
+      context: .
+      dockerfile: src/MenuService/Dockerfile
+    ports:
+      - "5002:5002"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:5002
+      - Jwt__Key=minha-chave-secreta-super-segura-para-jwt-tokens-123456789
+      - ConnectionStrings__MinhaConexao=Server=sqlserver,1433;Database=MenuDb;User Id=sa;Password=SenhaFortefiap!;TrustServerCertificate=true;
+    networks:
+      - fasttechfoods-network
+    depends_on:
+      sqlserver:
+        condition: service_started
+      auth-service:
+        condition: service_started
+    restart: unless-stopped
+
+  order-service:
+    build:
+      context: .
+      dockerfile: src/OrderService/Dockerfile
+    ports:
+      - "5003:5003"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:5003
+      - Jwt__Key=minha-chave-secreta-super-segura-para-jwt-tokens-123456789
+      - Services__AuthService=http://auth-service:5001
+      - Services__MenuService=http://menu-service:5002
+      - ConnectionStrings__MinhaConexao=Server=sqlserver,1433;Database=OrderDb;User Id=sa;Password=SenhaFortefiap!;TrustServerCertificate=true;
+      - RabbitMQ__Host=rabbitmq
+      - RabbitMQ__Port=5672
+      - RabbitMQ__Username=guest
+      - RabbitMQ__Password=guest
+    networks:
+      - fasttechfoods-network
+    depends_on:
+      sqlserver:
+        condition: service_started
+      rabbitmq:
+        condition: service_started
+      auth-service:
+        condition: service_started
+      menu-service:
+        condition: service_started
+    restart: unless-stopped
+
+  kitchen-service:
+    build:
+      context: .
+      dockerfile: src/KitchenService/Dockerfile
+    ports:
+      - "5004:5004"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:5004
+      - Jwt__Key=minha-chave-secreta-super-segura-para-jwt-tokens-123456789
+      - Services__OrderService=http://order-service:5003
+      - ConnectionStrings__MinhaConexao=Server=sqlserver,1433;Database=KitchenDb;User Id=sa;Password=SenhaFortefiap!;TrustServerCertificate=true;
+      - RabbitMQ__Host=rabbitmq
+      - RabbitMQ__Port=5672
+      - RabbitMQ__Username=guest
+      - RabbitMQ__Password=guest
+    networks:
+      - fasttechfoods-network
+    depends_on:
+      sqlserver:
+        condition: service_started
+      rabbitmq:
+        condition: service_started
+      order-service:
+        condition: service_started
+    restart: unless-stopped
+
+  consumer-service:
+    build:
+      context: .
+      dockerfile: src/Consumer.Service/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__OrderDb=Server=sqlserver,1433;Database=OrderDb;User Id=sa;Password=SenhaFortefiap!;TrustServerCertificate=true;
+      - ConnectionStrings__KitchenDb=Server=sqlserver,1433;Database=KitchenDb;User Id=sa;Password=SenhaFortefiap!;TrustServerCertificate=true;
+      - ConnectionStrings__MenuDb=Server=sqlserver,1433;Database=MenuDb;User Id=sa;Password=SenhaFortefiap!;TrustServerCertificate=true;
+      - RabbitMQ__Host=rabbitmq
+      - RabbitMQ__Port=5672
+      - RabbitMQ__Username=guest
+      - RabbitMQ__Password=guest
+    networks:
+      - fasttechfoods-network
+    depends_on:
+      sqlserver:
+        condition: service_started
+      rabbitmq:
+        condition: service_started
+      order-service:
+        condition: service_started
+      kitchen-service:
+        condition: service_started
+      menu-service:
+        condition: service_started
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    networks:
+      - fasttechfoods-network
+    depends_on:
+      consumer-service:
+        condition: service_started   
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3001:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks:
+      - fasttechfoods-network
+    depends_on:
+      - prometheus
+    
+
+volumes:
+  sqlserver_data:
+  rabbitmq_data:
+  grafana_data:
+
+networks:
+  fasttechfoods-network:
+    driver: bridge
+
