@@ -10,10 +10,6 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllers();
 
-// Configure Entity Framework
-builder.Services.AddDbContext<AuthDbContext>(options =>
-    options.UseInMemoryDatabase("AuthDb"));
-
 // Configure JWT
 var jwtKey = builder.Configuration["Jwt:Key"] ?? "minha-chave-secreta-super-segura-para-jwt-tokens-123456789";
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
