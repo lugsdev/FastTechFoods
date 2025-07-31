@@ -4,22 +4,26 @@ Sistema de pedidos para rede de fast food desenvolvido em C# com arquitetura de 
 
 ## 🏗️ Arquitetura
 
-O sistema é composto por 4 microsserviços independentes:
+O sistema é composto por 5 microsserviços independentes:
 
 - **AuthService** (porta 5001) - Autenticação e gerenciamento de usuários
 - **MenuService** (porta 5002) - Gerenciamento do cardápio
 - **OrderService** (porta 5003) - Gerenciamento de pedidos
 - **KitchenService** (porta 5004) - Gerenciamento da cozinha
+- **ConsumerService** - Consome mensagens das filas do RabbitMQ
 
 ## 🚀 Tecnologias Utilizadas
 
-- **.NET 6** - Framework principal
+- **.NET 8** - Framework principal
 - **ASP.NET Core Web API** - APIs REST
-- **Entity Framework Core** - ORM para acesso a dados
+- **Entity Framework Core** - ORM para acesso a dados (SqlServer)
 - **JWT Bearer Authentication** - Autenticação e autorização
 - **BCrypt** - Hash de senhas
-- **In-Memory Database** - Banco de dados para desenvolvimento
 - **Swagger/OpenAPI** - Documentação das APIs
+- **RabbitMQ** - Mensageria por filas
+- **Prometheus** - Monitoramento
+- **Grafana** - Dashboards com dados do monitoramento
+
 
 ## 📋 Requisitos Funcionais Implementados
 
@@ -67,6 +71,10 @@ dotnet run
 # Terminal 4 - KitchenService
 cd src/KitchenService
 dotnet run
+
+# Terminal 5 - ConsumerService
+cd src/ConsumerService
+dotnet run
 ```
 
 ### URLs dos Serviços
@@ -87,11 +95,11 @@ Cada serviço possui documentação Swagger disponível em:
 O sistema já vem com usuários pré-cadastrados:
 
 ### Funcionários
-- **Gerente:** gerente@fasttechfoods.com / 123456
-- **Cozinha:** cozinha@fasttechfoods.com / 123456
+- **Gerente:** gerente@fasttechfoods.com | senha: 123456
+- **Cozinha:** cozinha@fasttechfoods.com | senha: 123456
 
 ### Clientes
-Podem ser registrados via API ou interface.
+- **João Carlos** cliente@gmail.com | senha: 123456
 
 ## 🍔 Cardápio Inicial
 
@@ -113,50 +121,6 @@ O sistema já vem com 6 itens pré-cadastrados:
 6. **Cozinha** finaliza pedido ("Ready")
 7. **Cliente** pode cancelar pedido antes do preparo
 
-## 📡 Exemplos de API
-
-### Fazer Login (Cliente)
-```bash
-curl -X POST http://localhost:5001/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"cliente@teste.com","password":"123456"}'
-```
-
-### Listar Cardápio
-```bash
-curl http://localhost:5002/api/menu/available
-```
-
-### Criar Pedido
-```bash
-curl -X POST http://localhost:5003/api/order \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer <token>" \
-  -d '{"customerId":1,"items":[{"menuItemId":1,"quantity":2}],"deliveryType":"Balcão"}'
-```
-
-### Aceitar Pedido (Cozinha)
-```bash
-curl -X PUT http://localhost:5004/api/kitchen/orders/1/accept \
-  -H "Authorization: Bearer <token-funcionario>"
-```
-
-## 🏢 Estrutura do Projeto
-
-```
-FastTechFoods/
-├── src/
-│   ├── AuthService/          # Serviço de autenticação
-│   ├── MenuService/          # Serviço de cardápio
-│   ├── OrderService/         # Serviço de pedidos
-│   ├── KitchenService/       # Serviço da cozinha
-│   └── Common/               # DTOs e classes compartilhadas
-├── tests/                    # Testes unitários (futuro)
-├── deployments/              # Configurações de deploy
-│   ├── kubernetes/           # Manifests do Kubernetes
-│   └── cicd/                 # Pipelines CI/CD
-└── docs/                     # Documentação adicional
-```
 
 ## 🔒 Segurança
 
@@ -164,16 +128,6 @@ FastTechFoods/
 - Autorização baseada em roles (Employee/Customer)
 - Hash de senhas com BCrypt
 - CORS configurado para desenvolvimento
-
-## 🚀 Próximos Passos
-
-Para produção, considere implementar:
-- Banco de dados persistente (SQL Server/PostgreSQL)
-- Mensageria (RabbitMQ/Kafka)
-- Observabilidade (Grafana/Zabbix)
-- Containerização (Docker)
-- Orquestração (Kubernetes)
-- Pipeline CI/CD (GitHub Actions/Azure DevOps)
 
 ## 📝 Licença
 
