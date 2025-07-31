@@ -34,15 +34,15 @@ jobs:
       matrix:
         include:
           - service: AuthService
-            service_slug: authservice
+            service_slug: auth-service
           - service: MenuService
-            service_slug: menuservice
+            service_slug: menu-service
           - service: OrderService
-            service_slug: orderservice
+            service_slug: order-service
           - service: KitchenService
-            service_slug: kitchenservice
+            service_slug: kitchen-service
           - service: Consumer.Service
-            service_slug: consumerservice
+            service_slug: consumer-service
     
     steps:
     - uses: actions/checkout@v3
