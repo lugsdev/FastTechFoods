@@ -32,7 +32,17 @@ jobs:
     
     strategy:
       matrix:
-        service: [authservice, menuservice, orderservice, kitchenservice, consumerservice]
+        include:
+          - service: AuthService
+            service_slug: auth-service
+          - service: MenuService
+            service_slug: menu-service
+          - service: OrderService
+            service_slug: order-service
+          - service: KitchenService
+            service_slug: kitchen-service
+          - service: Consumer.Service
+            service_slug: consumer-service
     
     steps:
     - uses: actions/checkout@v3
@@ -47,7 +57,7 @@ jobs:
       id: meta
       uses: docker/metadata-action@v4
       with:
-        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/${{ matrix.service }}
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/${{ matrix.service_slug }}
         tags: |
           latest
     
