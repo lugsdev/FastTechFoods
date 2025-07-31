@@ -42,7 +42,7 @@ O sistema é composto por 5 microsserviços independentes:
 ## 🛠️ Como Executar
 
 ### Pré-requisitos
-- .NET 6 SDK instalado
+- .NET 8 SDK instalado
 - Git (para clonar o repositório)
 
 ### Executando os Microsserviços
