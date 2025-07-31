@@ -3,7 +3,7 @@ on: [push]
 
 env:
   REGISTRY: docker.io
-  IMAGE_NAME: zennbyte
+  IMAGE_NAME: zennbyte/fasttechfoods
 
 jobs:
   test:
@@ -47,12 +47,9 @@ jobs:
       id: meta
       uses: docker/metadata-action@v4
       with:
-        images: ${{ env.IMAGE_NAME }}/${{ matrix.service }}
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/${{ matrix.service }}
         tags: |
-          type=ref,event=branch
-          type=ref,event=pr
-          type=sha
-          type=raw,value=latest,enable={{is_default_branch}}
+          latest
     
     - name: Build and push Docker image
       uses: docker/build-push-action@v4
