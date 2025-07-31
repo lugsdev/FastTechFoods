@@ -32,7 +32,7 @@ jobs:
     
     strategy:
       matrix:
-        service: [auth-service, menu-service, order-service, kitchen-service, consumer-service]
+        service: [authservice, menuservice, orderservice, kitchenservice, consumerservice]
     
     steps:
     - uses: actions/checkout@v3
