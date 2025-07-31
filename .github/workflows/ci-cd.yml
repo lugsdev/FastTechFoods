@@ -3,7 +3,7 @@ on: [push]
 
 env:
   REGISTRY: docker.io
-  IMAGE_NAME: zennbyte/fasttechfoods
+  IMAGE_NAME: zennbyte
 
 jobs:
   test:
@@ -29,7 +29,6 @@ jobs:
   build-and-push:
     needs: test
     runs-on: ubuntu-latest
-    #if: github.ref == 'refs/heads/main'
     
     strategy:
       matrix:
