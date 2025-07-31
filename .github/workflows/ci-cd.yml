@@ -3,7 +3,7 @@ on: [push]
 
 env:
   REGISTRY: docker.io
-  IMAGE_NAME: zennbyte
+  IMAGE_NAME: zennbyte-fasttechfoods
 
 jobs:
   test:
@@ -34,15 +34,15 @@ jobs:
       matrix:
         include:
           - service: AuthService
-            service_slug: auth-service
+            service_slug: authservice
           - service: MenuService
-            service_slug: menu-service
+            service_slug: menuservice
           - service: OrderService
-            service_slug: order-service
+            service_slug: orderservice
           - service: KitchenService
-            service_slug: kitchen-service
+            service_slug: kitchenservice
           - service: Consumer.Service
-            service_slug: consumer-service
+            service_slug: consumerservice
     
     steps:
     - uses: actions/checkout@v3
